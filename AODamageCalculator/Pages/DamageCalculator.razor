@@ -1,0 +1,117 @@
+﻿@using AODamageCalculator.Data
+
+<div class="row">
+    <div class="col-md-4 border-radius-base">
+        <label><strong>Main hand weapon</strong></label>
+        <div>
+            <label>Name</label>
+            <input @bind="weaponSet.MainHand.Name" />
+        </div>
+        <div>
+            <label>Min damage</label>
+            <input @bind="weaponSet.MainHand.MinDamage" />
+        </div>
+        <div>
+            <label>Max damage</label>
+            <input @bind="weaponSet.MainHand.MaxDamage" />
+        </div>
+        <div>
+            <label>Critical modifier</label>
+            <input @bind="weaponSet.MainHand.CritModifier" />
+        </div>
+        <div>
+            <label>Attack time</label>
+            <input @bind="weaponSet.MainHand.AttackTime" />
+        </div>
+        <div>
+            <label>Recharge time</label>
+            <input @bind="weaponSet.MainHand.RechargeTime" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div>
+            <label><strong>Off hand weapon</strong></label>
+            <input type="checkbox" @bind="weaponSet.OffHandInUse" />
+        </div>
+        <div>
+            <label>Name</label>
+            <input @bind="weaponSet.OffHand.Name" />
+        </div>
+        <div>
+            <label>Min damage</label>
+            <input @bind="weaponSet.OffHand.MinDamage" />
+        </div>
+        <div>
+            <label>Max damage</label>
+            <input @bind="weaponSet.OffHand.MaxDamage" />
+        </div>
+        <div>
+            <label>Critical modifier</label>
+            <input @bind="weaponSet.OffHand.CritModifier" />
+        </div>
+        <div>
+            <label>Attack time</label>
+            <input @bind="weaponSet.OffHand.AttackTime" />
+        </div>
+        <div>
+            <label>Recharge time</label>
+            <input @bind="weaponSet.OffHand.RechargeTime" />
+        </div>
+    </div>
+</div>
+
+<div>
+    <p><strong>Player info</strong></p>
+    <div>
+        <label>Critical hit chance</label>
+        <input @bind="playerInfo.CritChance" />
+    </div>
+    <div>
+        <label>Attack rating</label>
+        <input @bind="playerInfo.AttackRating" />
+    </div>
+    <div>
+        <label>Add damage</label>
+        <input @bind="playerInfo.AddDamage" />
+    </div>
+    <div>
+        <label>Agg/def</label>
+        <input @bind="playerInfo.AggDef" />
+    </div>
+    <div>
+        <label>Initiatives</label>
+        <input @bind="playerInfo.Initiatives" />
+    </div>
+</div>
+<button @onclick="Calculate">Calculate</button>
+<div>
+    <p>You would do <strong>@result.TotalDamage</strong> damage over @result.FightTime seconds. Averaged over @result.Iterations iterations.</p>
+    <div class="row">
+        @foreach (var weaponResult in result.WeaponResults)
+        {
+        <div class="col-md-4 border-radius-base">
+            <p><strong>@weaponResult.WeaponInfo.Name</strong></p>
+            <p>Total damage: @weaponResult.TotalDamage</p>
+            <p>Attack/Recharge time: @weaponResult.WeaponInfo.AdjustedAttackTime(playerInfo) / @weaponResult.WeaponInfo.AdjustedRechargeTime(playerInfo)</p>
+            <p>Number of attacks: @weaponResult.NumberOfAttacks</p>
+            <p>Number of critical hits: @weaponResult.NumberOfCriticalHits</p>
+            <p>Minimum attack damage: @weaponResult.MinimumDamage</p>
+            <p>Highest attack damage: @weaponResult.HighestDamage</p>
+            <p>Critical hit damage: @weaponResult.CriticalDamage</p>
+        </div>
+        }
+    </div>
+        
+    </div>
+
+@code {
+    private WeaponSet weaponSet = new WeaponSet();
+    private PlayerInfo playerInfo = new PlayerInfo();
+    private DamageCalculatorService calcService = new DamageCalculatorService();
+    private CalculationResult result = new CalculationResult();
+
+    private void Calculate()
+    {
+        result = calcService.Calculate(weaponSet, playerInfo);
+    }
+}
