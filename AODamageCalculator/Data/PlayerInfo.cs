@@ -11,5 +11,7 @@
         public int Initiatives { get; set; }
 
         public int AggDef { get; set; } = 100;
+
+        public int TargetAC { get; set; } = 5000;
     }
 }

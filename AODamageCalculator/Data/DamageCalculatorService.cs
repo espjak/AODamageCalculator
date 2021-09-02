@@ -39,16 +39,21 @@ namespace AODamageCalculator.Data
                 weaponInfo.MaxDamage + weaponInfo.CritModifier :
                 randomizer.Next(weaponInfo.MinDamage, weaponInfo.MaxDamage);
 
-            return new DamageResult((int)GetModifiedDamage(baseDamage, playerInfo), isCrit);
+            var minimumDamage = isCrit ? weaponInfo.MinDamage + weaponInfo.CritModifier : weaponInfo.MinDamage;
+            var minimumModifiedDamage = (int)GetModifiedDamage(minimumDamage, playerInfo, false);
+            var modifiedDamage = (int)GetModifiedDamage(baseDamage, playerInfo);
+
+            return new DamageResult(Math.Max(minimumModifiedDamage, modifiedDamage), isCrit);
         }
 
-        private double GetModifiedDamage(double baseDamage, PlayerInfo playerInfo)
+        private double GetModifiedDamage(double baseDamage, PlayerInfo playerInfo, bool useArmorClass = true)
         {
             var attackRatingReductionModifier = 0.3;
-            if (playerInfo.AttackRating <= 1000)
-                return baseDamage * (1.0 + (playerInfo.AttackRating / 400.0)) + playerInfo.AddDamage;
+            var damageModifiedByAR = playerInfo.AttackRating <= 1000 ?
+                baseDamage * (1.0 + (playerInfo.AttackRating / 400.0)) :
+                baseDamage * (3.5 + ((playerInfo.AttackRating - 1000.0) * attackRatingReductionModifier) / 400.0);
 
-            return baseDamage * (3.5 + ((playerInfo.AttackRating - 1000.0) * attackRatingReductionModifier) / 400.0) + playerInfo.AddDamage;
+            return damageModifiedByAR + playerInfo.AddDamage - (useArmorClass ? (playerInfo.TargetAC / 10.0) : 0);
         }
 
         private Dictionary<WeaponInfo, int> GetNumberOfAttacks(WeaponSet weaponSet, PlayerInfo playerInfo, int fightTime)
