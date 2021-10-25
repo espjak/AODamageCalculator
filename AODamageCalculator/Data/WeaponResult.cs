@@ -3,13 +3,15 @@ using System.Linq;
 
 namespace AODamageCalculator.Data
 {
-    public class WeaponResults
+    public class WeaponResult
     {
-        public WeaponResults(WeaponInfo weaponInfo, List<IterationResult> damageResults)
+        public WeaponResult(WeaponInfo weaponInfo)
         {
             WeaponInfo = weaponInfo;
-            DamageResults = damageResults;
+            DamageResults = new List<IterationResult>();
         }
+
+        public void AddIterationResult(IterationResult result) => DamageResults.Add(result);
 
         public WeaponInfo WeaponInfo { get; set; }
 
@@ -21,7 +23,7 @@ namespace AODamageCalculator.Data
 
         public int CriticalDamage => DamageResults.Max(r => r.CriticalDamage);
 
-        public int TotalDamage => (int)DamageResults.Average(r => r.Results.Sum(r => r.Damage));
+        public int TotalDamage => (int)DamageResults.Average(r => r.Results.Sum(innerResult => innerResult.Damage));
 
         public int NumberOfAttacks => (int)DamageResults.Average(r => r.Results.Count);
 

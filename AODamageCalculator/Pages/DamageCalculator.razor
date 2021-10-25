@@ -1,121 +1,157 @@
 ﻿@using AODamageCalculator.Data
+@inject IDamageCalculatorService _calcService
 
 <div class="row">
-    <div class="col-md-4 border-radius-base">
-        <label><strong>Main hand weapon</strong></label>
+    <div class="col-md-4">
+        <label class="pt-1"><strong>Main hand weapon</strong></label>
         <div>
-            <label>Name</label>
-            <input @bind="weaponSet.MainHand.Name" />
+            <label class="input-label">Name</label>
+            <input @bind="_weaponSet.MainHand.Name" />
         </div>
         <div>
-            <label>Min damage</label>
-            <input @bind="weaponSet.MainHand.MinDamage" />
+            <label class="input-label">Min damage</label>
+            <input @bind="_weaponSet.MainHand.MinDamage" />
         </div>
         <div>
-            <label>Max damage</label>
-            <input @bind="weaponSet.MainHand.MaxDamage" />
+            <label class="input-label">Max damage</label>
+            <input @bind="_weaponSet.MainHand.MaxDamage" />
         </div>
         <div>
-            <label>Critical modifier</label>
-            <input @bind="weaponSet.MainHand.CritModifier" />
+            <label class="input-label">Critical modifier</label>
+            <input @bind="_weaponSet.MainHand.CritModifier" />
         </div>
         <div>
-            <label>Attack time</label>
-            <input @bind="weaponSet.MainHand.AttackTime" />
+            <label class="input-label">Attack time</label>
+            <input @bind="_weaponSet.MainHand.AttackTime" />
         </div>
         <div>
-            <label>Recharge time</label>
-            <input @bind="weaponSet.MainHand.RechargeTime" />
+            <label class="input-label">Recharge time</label>
+            <input @bind="_weaponSet.MainHand.RechargeTime" />
+        </div>
+        <div>
+            <label class="pt-2"><strong>Main hand specials (Skill value/Modifier)</strong></label>
+            @foreach (var weaponSpecial in _weaponSet.MainHand.WeaponSpecials)
+            {
+                <div>
+                    <label class="input-label">@weaponSpecial.Name</label>
+                    <input @bind="weaponSpecial.SkillValue" />
+                    @if (weaponSpecial.HasModifier)
+                    {
+                        <input @bind="weaponSpecial.Modifier" />
+                    }
+                </div>
+            }
         </div>
     </div>
     <div class="col-md-4">
         <div>
-            <label><strong>Off hand weapon</strong></label>
-            <input type="checkbox" @bind="weaponSet.OffHandInUse" />
+            <label class="pt-1"><strong>Off hand weapon</strong></label>
+            <input type="checkbox" @bind="_weaponSet.OffHandInUse" />
         </div>
         <div>
-            <label>Name</label>
-            <input @bind="weaponSet.OffHand.Name" />
+            <label class="input-label">Name</label>
+            <input @bind="_weaponSet.OffHand.Name" />
         </div>
         <div>
-            <label>Min damage</label>
-            <input @bind="weaponSet.OffHand.MinDamage" />
+            <label class="input-label">Min damage</label>
+            <input @bind="_weaponSet.OffHand.MinDamage" />
         </div>
         <div>
-            <label>Max damage</label>
-            <input @bind="weaponSet.OffHand.MaxDamage" />
+            <label class="input-label">Max damage</label>
+            <input @bind="_weaponSet.OffHand.MaxDamage" />
         </div>
         <div>
-            <label>Critical modifier</label>
-            <input @bind="weaponSet.OffHand.CritModifier" />
+            <label class="input-label">Critical modifier</label>
+            <input @bind="_weaponSet.OffHand.CritModifier" />
         </div>
         <div>
-            <label>Attack time</label>
-            <input @bind="weaponSet.OffHand.AttackTime" />
+            <label class="input-label">Attack time</label>
+            <input @bind="_weaponSet.OffHand.AttackTime" />
         </div>
         <div>
-            <label>Recharge time</label>
-            <input @bind="weaponSet.OffHand.RechargeTime" />
+            <label class="input-label">Recharge time</label>
+            <input @bind="_weaponSet.OffHand.RechargeTime" />
         </div>
     </div>
 </div>
 
-<div>
-    <p><strong>Player info</strong></p>
-    <div>
-        <label>Critical hit chance</label>
-        <input @bind="playerInfo.CritChance" />
-    </div>
-    <div>
-        <label>Attack rating</label>
-        <input @bind="playerInfo.AttackRating" />
-    </div>
-    <div>
-        <label>Add damage</label>
-        <input @bind="playerInfo.AddDamage" />
-    </div>
-    <div>
-        <label>Agg/def</label>
-        <input @bind="playerInfo.AggDef" />
-    </div>
-    <div>
-        <label>Initiatives</label>
-        <input @bind="playerInfo.Initiatives" />
-    </div>
-    <div>
-        <label>Targets AC</label>
-        <input @bind="playerInfo.TargetAC" />
+<div class="row">
+    <div class="col-md-4">
+        <div>
+            <label class="pt-3"><strong>Player info</strong></label>
+            <div>
+                <label class="input-label">Critical hit chance</label>
+                <input @bind="_playerInfo.CritChance" />
+            </div>
+            <div>
+                <label class="input-label">Attack rating</label>
+                <input @bind="_playerInfo.AttackRating" />
+            </div>
+            <div>
+                <label class="input-label">Add damage</label>
+                <input @bind="_playerInfo.AddDamage" />
+            </div>
+            <div>
+                <label class="input-label">Agg/def</label>
+                <input @bind="_playerInfo.AggDef" />
+            </div>
+            <div>
+                <label class="input-label">Initiatives</label>
+                <input @bind="_playerInfo.Initiatives" />
+            </div>
+            <div>
+                <label class="input-label">Targets AC</label>
+                <input @bind="_playerInfo.TargetAC" />
+            </div>
+        </div>
     </div>
 </div>
-<button @onclick="Calculate">Calculate</button>
-<div>
-    <p>You would do <strong>@result.TotalDamage</strong> damage over @result.FightTime seconds. Averaged over @result.Iterations iterations.</p>
-    <div class="row">
-        @foreach (var weaponResult in result.WeaponResults)
-        {
-        <div class="col-md-4 border-radius-base">
-            <p><strong>@weaponResult.WeaponInfo.Name</strong></p>
-            <p>Total damage: @weaponResult.TotalDamage</p>
-            <p>Attack/Recharge time: @weaponResult.WeaponInfo.AdjustedAttackTime(playerInfo) / @weaponResult.WeaponInfo.AdjustedRechargeTime(playerInfo)</p>
-            <p>Number of attacks: @weaponResult.NumberOfAttacks</p>
-            <p>Number of critical hits: @weaponResult.NumberOfCriticalHits</p>
-            <p>Minimum attack damage: @weaponResult.MinimumDamage</p>
-            <p>Highest attack damage: @weaponResult.HighestDamage</p>
-            <p>Critical hit damage: @weaponResult.CriticalDamage</p>
+
+<div class="pt-3">
+    <button class="btn btn-light" @onclick="Calculate">Calculate</button>
+</div>
+<div class="row pt-3">
+    <div class="col-md-6">
+        <p>You would do <strong>@_result.TotalDamage</strong> damage over @_result.FightTime seconds. Averaged over @_result.Iterations iterations.</p>
+        <div class="row">
+            @foreach (var weaponResult in _result.WeaponResults)
+            {
+                <div class="col-md-6">
+                    <p><strong>@weaponResult.WeaponInfo.Name</strong></p>
+                    <p>Total damage: @weaponResult.TotalDamage</p>
+                    <p>Attack/Recharge time: @weaponResult.WeaponInfo.AdjustedAttackTime(_playerInfo) / @weaponResult.WeaponInfo.AdjustedRechargeTime(_playerInfo)</p>
+                    <p>Number of attacks: @weaponResult.NumberOfAttacks</p>
+                    <p>Number of critical hits: @weaponResult.NumberOfCriticalHits</p>
+                    <p>Minimum attack damage: @weaponResult.MinimumDamage</p>
+                    <p>Highest attack damage: @weaponResult.HighestDamage</p>
+                    <p>Critical hit damage: @weaponResult.CriticalDamage</p>
+                </div>
+            }
         </div>
+        @if (_result.SpecialAttackResult != null)
+        {
+            <p><strong>Specials</strong></p>
+            @foreach (var (name, damage) in _result.SpecialAttackResult.TotalDamage())
+            {
+                <p>@name damage: @damage</p>
+            }
         }
     </div>
-        
+    <div class="col-md-3">
+        <RadzenChart>
+            <RadzenPieSeries  Data="@_result.DamagePieChart" Title="Damage" CategoryProperty="Source" ValueProperty="Damage" />
+        </RadzenChart>
     </div>
+</div>
+
 
 @code {
-    private WeaponSet weaponSet = new WeaponSet();
-    private PlayerInfo playerInfo = new PlayerInfo();
-    private DamageCalculatorService calcService = new DamageCalculatorService();
-    private CalculationResult result = new CalculationResult();
+    private WeaponSet _weaponSet = new WeaponSet();
+    private PlayerInfo _playerInfo = new PlayerInfo();
+    private CalculationResult _result = new CalculationResult();
 
     private void Calculate()
     {
-        result = calcService.Calculate(weaponSet, playerInfo);
+        _result = _calcService.Calculate(_weaponSet, _playerInfo);
     }
 }

@@ -1,59 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AODamageCalculator.Data.SpecialAttacks;
 
 namespace AODamageCalculator.Data
 {
-    public class DamageCalculatorService
+    public class DamageCalculatorService : IDamageCalculatorService
     {
-        private Random randomizer = new Random();
+        private readonly IEnumerable<ISpecialAttack> _specialAttacks;
+
+        public DamageCalculatorService(IEnumerable<ISpecialAttack> specialAttacks)
+        {
+            _specialAttacks = specialAttacks;
+        }
 
         public CalculationResult Calculate(WeaponSet weaponSet, PlayerInfo playerInfo)
         {
             var fightTime = 60;
-            var iterations = 1000;
+            var iterations = 500;
             var numberOfAttacksByWeapon = GetNumberOfAttacks(weaponSet, playerInfo, fightTime);
-            var weaponResults = new List<WeaponResults>();
-            foreach (var kvp in numberOfAttacksByWeapon)
+            var weaponResults = new Dictionary<string, WeaponResult>();
+            var specialAttackResult = new SpecialAttackResult();
+            foreach (var (weaponInfo, attacks) in numberOfAttacksByWeapon)
             {
-                var iterationResults = new List<IterationResult>();
-                foreach (var iteration in Enumerable.Range(0, iterations))
-                {
-                    var iterationResult = new List<DamageResult>();
-                    foreach (var attack in Enumerable.Range(0, kvp.Value))
-                    {
-                        iterationResult.Add(Attack(kvp.Key, playerInfo));
-                    }
-                    iterationResults.Add(new IterationResult(iteration, iterationResult));
-                }
-                weaponResults.Add(new WeaponResults(kvp.Key, iterationResults));
+                weaponResults.Add(weaponInfo.Name, new WeaponResult(weaponInfo));
             }
-             
-            return new CalculationResult(weaponResults, fightTime, iterations);
+
+            foreach (var iteration in Enumerable.Range(0, iterations))
+            {
+                // Regular attacks handling
+                foreach (var (weaponInfo, attacks) in numberOfAttacksByWeapon)
+                {
+                    var weaponResult = weaponResults[weaponInfo.Name];
+                    var damageResults = new List<DamageResult>();
+                    foreach (var attack in Enumerable.Range(0, attacks))
+                    {
+                        damageResults.Add(AttackHelper.RegularAttack(weaponInfo, playerInfo));
+                    }
+                    weaponResult.AddIterationResult(new IterationResult(iteration, damageResults));
+                }
+
+                // Special attacks handling
+                specialAttackResult.AddIterationResult(new SpecialAttackIterationResult(iteration, CalculateSpecialAttacks(fightTime, weaponSet, playerInfo))); ;
+            }
+
+            return new CalculationResult(weaponResults.Values.ToList(), specialAttackResult, fightTime, iterations);
         }
 
-        private DamageResult Attack(WeaponInfo weaponInfo, PlayerInfo playerInfo)
+        private Dictionary<string, List<DamageResult>> CalculateSpecialAttacks(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
         {
-            var isCrit = IsCrit(playerInfo);
-            var baseDamage = isCrit ?
-                weaponInfo.MaxDamage + weaponInfo.CritModifier :
-                randomizer.Next(weaponInfo.MinDamage, weaponInfo.MaxDamage);
+            var result = _specialAttacks
+                .Where(sa => sa.IsEnabled(weaponSet))
+                .Select(sa => sa.GetAttackResult(fightTime, weaponSet, playerInfo));
 
-            var minimumDamage = isCrit ? weaponInfo.MinDamage + weaponInfo.CritModifier : weaponInfo.MinDamage;
-            var minimumModifiedDamage = (int)GetModifiedDamage(minimumDamage, playerInfo, false);
-            var modifiedDamage = (int)GetModifiedDamage(baseDamage, playerInfo);
-
-            return new DamageResult(Math.Max(minimumModifiedDamage, modifiedDamage), isCrit);
-        }
-
-        private double GetModifiedDamage(double baseDamage, PlayerInfo playerInfo, bool useArmorClass = true)
-        {
-            var attackRatingReductionModifier = 0.3;
-            var damageModifiedByAR = playerInfo.AttackRating <= 1000 ?
-                baseDamage * (1.0 + (playerInfo.AttackRating / 400.0)) :
-                baseDamage * (3.5 + ((playerInfo.AttackRating - 1000.0) * attackRatingReductionModifier) / 400.0);
-
-            return damageModifiedByAR + playerInfo.AddDamage - (useArmorClass ? (playerInfo.TargetAC / 10.0) : 0);
+            return result.ToDictionary(r => r.Item1, r => r.Item2);
         }
 
         private Dictionary<WeaponInfo, int> GetNumberOfAttacks(WeaponSet weaponSet, PlayerInfo playerInfo, int fightTime)
@@ -61,15 +61,20 @@ namespace AODamageCalculator.Data
             var attacks = new Dictionary<WeaponInfo, int>();
             if (weaponSet.OffHandInUse)
             {
+                var granularityMultiplier = 1000;
                 var mainHandAttacks = 0;
                 var mainHandAttackCounter = 0;
                 var mainHandRechargeCounter = 0;
                 var mainHandAttacking = true;
                 var offHandAttacks = 0;
                 var offHandAttackCounter = 0;
-                var offHandRechargeCounter = weaponSet.OffHand.AdjustedRechargeTime(playerInfo);
+                var offHandRechargeCounter = weaponSet.OffHand.AdjustedRechargeTime(playerInfo) * granularityMultiplier;
+                var mainHandAttackTicks = weaponSet.MainHand.AdjustedAttackTime(playerInfo) * granularityMultiplier;
+                var mainHandRechargeTicks = weaponSet.MainHand.AdjustedRechargeTime(playerInfo) * granularityMultiplier;
+                var offHandAttackTicks = weaponSet.OffHand.AdjustedAttackTime(playerInfo) * granularityMultiplier;
+                var offHandRechargeTicks = weaponSet.OffHand.AdjustedRechargeTime(playerInfo) * granularityMultiplier;
                 var offHandAttacking = false;
-                foreach (var second in Enumerable.Range(0, fightTime))
+                foreach (var tick in Enumerable.Range(0, fightTime * granularityMultiplier))
                 {
                     if (!mainHandAttacking && !offHandAttacking)
                     {
@@ -82,25 +87,25 @@ namespace AODamageCalculator.Data
                     if (offHandAttacking)
                         offHandAttackCounter++;
 
-                    if (mainHandAttackCounter >= weaponSet.MainHand.AdjustedAttackTime(playerInfo))
+                    if (mainHandAttackCounter >= mainHandAttackTicks)
                     {
                         mainHandAttacks++;
                         mainHandAttackCounter = 0;
                         mainHandAttacking = false;
                     }
-                    if (mainHandRechargeCounter >= weaponSet.MainHand.AdjustedRechargeTime(playerInfo) && !offHandAttacking)
+                    if (mainHandRechargeCounter >= mainHandRechargeTicks && !offHandAttacking)
                     {
                         mainHandRechargeCounter = 0;
                         mainHandAttacking = true;
                     }
 
-                    if (offHandAttackCounter >= weaponSet.OffHand.AdjustedAttackTime(playerInfo))
+                    if (offHandAttackCounter >= offHandAttackTicks)
                     {
                         offHandAttacks++;
                         offHandAttackCounter = 0;
                         offHandAttacking = false;
                     }
-                    if (offHandRechargeCounter >= weaponSet.OffHand.AdjustedRechargeTime(playerInfo) && !mainHandAttacking)
+                    if (offHandRechargeCounter >= offHandRechargeTicks && !mainHandAttacking)
                     {
                         offHandRechargeCounter = 0;
                         offHandAttacking = true;
@@ -119,13 +124,6 @@ namespace AODamageCalculator.Data
             }
 
             return attacks;
-        }
-
-        private bool IsCrit(PlayerInfo playerInfo)
-        {
-            var critRoll = randomizer.Next(0, 100);
-
-            return playerInfo.CritChance >= critRoll; 
         }
     }
 }
