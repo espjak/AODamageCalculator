@@ -1,0 +1,94 @@
+﻿@using AODamageCalculator.Data
+
+<MudItem xs="3">
+    <MudText Typo="Typo.h5">@Title</MudText>
+    <MudAutocomplete T="WeaponInfo" Label="Name" @bind-Value="@WeaponInfo" SearchFunc="@SearchWeapons" ResetValueOnEmptyText="true" ToStringFunc="@(w => w != null ? w.GetDisplayValue() : string.Empty)" />
+    <MudSlider disabled=@WeaponInfo.QlRange.HasNoRange @bind-Value="@WeaponQl" Min="@WeaponInfo.QlRange.Min" Max="@WeaponInfo.QlRange.Max">QL: @WeaponQl</MudSlider>
+    <MudGrid Spacing="2">
+        <MudItem xs="4">
+            <MudNumericField HideSpinButtons="true" @bind-Value="@Weapon.WeaponDetails.Damage.Min" Label="Min damage" Variant="Variant.Text" />
+        </MudItem>
+        <MudItem xs="4">
+            <MudNumericField HideSpinButtons="true" @bind-Value="@Weapon.WeaponDetails.Damage.Max" Label="Max damage" Variant="Variant.Text" />
+        </MudItem>
+        <MudItem xs="4">
+                <MudNumericField HideSpinButtons="true" @bind-Value="@Weapon.WeaponDetails.CritModifier" Label="Critical modifier" Variant="Variant.Text" />
+        </MudItem>
+    </MudGrid>
+    <MudGrid Spacing="2">
+        <MudItem xs="6">
+            <MudNumericField HideSpinButtons="true" @bind-Value="@Weapon.WeaponDetails.AttackTime" Label="Attack time" Variant="Variant.Text" />
+        </MudItem>
+        <MudItem xs="6">
+            <MudNumericField HideSpinButtons="true" @bind-Value="@Weapon.WeaponDetails.RechargeTime" Label="Recharge time" Variant="Variant.Text" />
+        </MudItem>
+    </MudGrid>
+    <MudText Typo="Typo.h6">@Title specials</MudText>
+    @foreach (var weaponSpecial in @Weapon.WeaponDetails.WeaponSpecials)
+        {
+            <MudGrid Spacing="2">
+                <MudItem xs="6">
+                    <MudNumericField HideSpinButtons="true" @bind-Value="@weaponSpecial.SkillValue" Label="@weaponSpecial.Name" Variant="Variant.Text" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField HideSpinButtons="true" Disabled="@DisableWeaponModifier(weaponSpecial.HasModifier)" @bind-Value="@weaponSpecial.Modifier" Label="Modifier" Variant="Variant.Text" />
+                </MudItem>
+            </MudGrid>
+        }
+</MudItem>
+@code {
+    private WeaponInfo _weaponInfo = new WeaponInfo();
+    private int _weaponQl = 1;
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public Action<WeaponInfo> OnWeaponChange { get; set; }
+
+    [Parameter]
+    public bool? Enabled { get; set; }
+
+    [Parameter]
+    public Action<int> OnWeaponQlChange { get; set; }
+
+    [Parameter]
+    public Func<string, IEnumerable<WeaponInfo>> SearchFunc { get; set; }
+
+    [Parameter]
+    public Weapon Weapon { get; set; } = new Weapon();
+
+    public WeaponInfo WeaponInfo
+    {
+        get => _weaponInfo;
+        set 
+        {
+            if ( _weaponInfo != value)
+            {
+                _weaponInfo = value ?? new WeaponInfo();
+                _weaponQl = _weaponInfo.QlRange.Min;
+                OnWeaponChange(_weaponInfo);
+            }
+        }
+    }
+
+    public int WeaponQl
+    {
+        get => _weaponQl;
+        set 
+        {
+            if ( _weaponQl != value)
+            {
+                _weaponQl = value;
+                OnWeaponQlChange(value);
+            }
+        }
+    }
+
+    private Task<IEnumerable<WeaponInfo>> SearchWeapons(string value)
+    {
+        return Task.Run(() => SearchFunc(value)); 
+    }
+
+    private bool DisableWeaponModifier(bool hasModifier) => !hasModifier;
+}

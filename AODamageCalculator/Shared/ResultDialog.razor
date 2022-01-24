@@ -1,0 +1,49 @@
+﻿@using AODamageCalculator.Data
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="2" Class="pa-4">
+            <MudItem xs="12">
+                <MudText Style="white-space: pre-wrap;">You would do <strong>@Result.TotalDamage</strong> over <strong>@Result.FightTime</strong> seconds. Averaged over <strong>@Result.Iterations</strong> iterations</MudText>
+            </MudItem>
+            @foreach (var weaponResult in Result.WeaponResults)
+            {
+                <MudItem xs="4">
+                    <MudText><strong>@weaponResult.Weapon.Name</strong></MudText>
+                    <MudText>Total damage: @weaponResult.TotalDamage</MudText>
+                    <MudText>Attack/Recharge time: @weaponResult.Weapon.WeaponDetails.AdjustedAttackTime(Result.PlayerInfo) / @weaponResult.Weapon.WeaponDetails.AdjustedRechargeTime(Result.PlayerInfo)</MudText>
+                    <MudText>Number of attacks: @weaponResult.NumberOfAttacks</MudText>
+                    <MudText>Number of critical hits: @weaponResult.NumberOfCriticalHits</MudText>
+                    <MudText>Critical hit damage: @weaponResult.CriticalDamage</MudText>
+                    <MudText>Minimum attack damage: @weaponResult.MinimumDamage</MudText>
+                    <MudText>Highest attack damage: @weaponResult.HighestDamage</MudText>
+                </MudItem>
+            }
+            @if (Result.SpecialAttackResult != null)
+            {
+                <MudItem xs="4">
+                    <MudText><strong>Specials</strong></MudText>
+                    @foreach (var (name, damage) in Result.SpecialAttackResult.TotalDamage())
+                    {
+                        <MudText>@name damage: @damage</MudText>
+                    }
+                </MudItem>
+            }
+            <MudItem xs="12">
+                <DamageChart ChartData="@Result.DamagePieChart"></DamageChart>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public CalculationResult Result { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+}

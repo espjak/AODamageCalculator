@@ -1,9 +1,9 @@
 ﻿namespace AODamageCalculator.Data
 {
-    public class DamagePieChartItem
+    public class MudChartData
     {
-        public string Source { get; set; }
+        public string[] Labels { get; set; }
 
-        public int Damage { get; set; }
+        public double[] Data { get; set; }
     }
 }

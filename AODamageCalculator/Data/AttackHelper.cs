@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AODamageCalculator.Data
 {
@@ -9,14 +6,14 @@ namespace AODamageCalculator.Data
     {
         private static readonly Random _random = new Random();
 
-        public static DamageResult RegularAttack(WeaponInfo weaponInfo, PlayerInfo playerInfo, bool supportsCriticalHit = true)
+        public static DamageResult RegularAttack(WeaponDetails weaponDetails, PlayerInfo playerInfo, bool supportsCriticalHit = true)
         {
             var isCriticalHit = supportsCriticalHit && IsCriticalHit(playerInfo);
             var baseDamage = isCriticalHit ?
-                weaponInfo.MaxDamage + weaponInfo.CritModifier :
-                _random.Next(weaponInfo.MinDamage, weaponInfo.MaxDamage);
+                weaponDetails.Damage.Max + weaponDetails.CritModifier :
+                _random.Next(weaponDetails.Damage.Min, weaponDetails.Damage.Max);
 
-            var minimumDamage = isCriticalHit ? weaponInfo.MinDamage + weaponInfo.CritModifier : weaponInfo.MinDamage;
+            var minimumDamage = isCriticalHit ? weaponDetails.Damage.Min + weaponDetails.CritModifier : weaponDetails.Damage.Min;
             var minimumModifiedDamage = (int)GetModifiedDamage(minimumDamage, playerInfo, false);
             var modifiedDamage = (int)GetModifiedDamage(baseDamage, playerInfo);
 

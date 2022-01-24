@@ -8,23 +8,23 @@ namespace AODamageCalculator.Data.SpecialAttacks
     {
         public (string, List<DamageResult>) GetAttackResult(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
         {
-            var weaponInfo = weaponSet.MainHand.GetSpecial(SupportedWeaponSpecials.Burst).IsEnabled
-                ? weaponSet.MainHand
-                : weaponSet.OffHand;
+            var weaponDetails = weaponSet.MainHand.WeaponDetails.GetSpecial(SupportedWeaponSpecials.Burst).IsEnabled
+                ? weaponSet.MainHand.WeaponDetails
+                : weaponSet.OffHand.WeaponDetails;
 
-            var specialAttack = weaponInfo.GetSpecial(SupportedWeaponSpecials.Burst);
+            var specialAttack = weaponDetails.GetSpecial(SupportedWeaponSpecials.Burst);
 
-            var rechargeTime = Math.Max(8.0 + weaponInfo.AttackTime, (weaponInfo.RechargeTime * 20.0 + (specialAttack.Modifier / 100.0)) - (specialAttack.SkillValue / 25.0));
+            var rechargeTime = Math.Max(8.0 + weaponDetails.AttackTime, (weaponDetails.RechargeTime * 20.0 + (specialAttack.Modifier / 100.0)) - (specialAttack.SkillValue / 25.0));
             var wholeNumberOfBursts = (int)(fightTime / rechargeTime);
 
-            var result = Enumerable.Range(0, wholeNumberOfBursts * 3).Select(a => AttackHelper.RegularAttack(weaponInfo, playerInfo, false)).ToList();
+            var result = Enumerable.Range(0, wholeNumberOfBursts * 3).Select(a => AttackHelper.RegularAttack(weaponDetails, playerInfo, false)).ToList();
             return (SupportedWeaponSpecials.Burst, result);
         }
 
         public bool IsEnabled(WeaponSet weaponSet)
         {
-            return weaponSet.MainHand.GetSpecial(SupportedWeaponSpecials.Burst).IsEnabled ||
-                   (weaponSet.OffHandInUse && weaponSet.OffHand.GetSpecial(SupportedWeaponSpecials.Burst).IsEnabled);
+            return weaponSet.MainHand.WeaponDetails.GetSpecial(SupportedWeaponSpecials.Burst).IsEnabled ||
+                   (weaponSet.OffHandInUse && weaponSet.OffHand.WeaponDetails.GetSpecial(SupportedWeaponSpecials.Burst).IsEnabled);
         }
     }
 }

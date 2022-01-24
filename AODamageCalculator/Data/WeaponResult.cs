@@ -5,15 +5,15 @@ namespace AODamageCalculator.Data
 {
     public class WeaponResult
     {
-        public WeaponResult(WeaponInfo weaponInfo)
+        public WeaponResult(Weapon weapon)
         {
-            WeaponInfo = weaponInfo;
+            Weapon = weapon;
             DamageResults = new List<IterationResult>();
         }
 
         public void AddIterationResult(IterationResult result) => DamageResults.Add(result);
 
-        public WeaponInfo WeaponInfo { get; set; }
+        public Weapon Weapon { get; set; }
 
         public List<IterationResult> DamageResults { get; set; }
 

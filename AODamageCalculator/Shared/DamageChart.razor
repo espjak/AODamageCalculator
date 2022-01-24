@@ -1,0 +1,11 @@
+﻿@using AODamageCalculator.Data
+@using AODamageCalculator.Services
+
+<MudChart ChartType="ChartType.Pie" InputData="@ChartData.Data" @bind-SelectedIndex="Index" InputLabels="@ChartData.Labels" Width="300px" Height="300px" />
+
+@code {
+    private int Index = -1;
+
+    [Parameter]
+    public MudChartData ChartData { get; set; }
+}

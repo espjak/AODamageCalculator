@@ -10,9 +10,10 @@ namespace AODamageCalculator.Data
             WeaponResults = new List<WeaponResult>();
         }
 
-        public CalculationResult(List<WeaponResult> weaponResults, SpecialAttackResult specialAttackResult, int fightTime, int iterations)
+        public CalculationResult(PlayerInfo playerInfo, List<WeaponResult> weaponResults, SpecialAttackResult specialAttackResult, int fightTime, int iterations)
         {
             TotalDamage = weaponResults.Sum(ws => ws.TotalDamage) + specialAttackResult.TotalDamage().Sum(td => td.Value);
+            PlayerInfo = playerInfo;
             WeaponResults = weaponResults;
             SpecialAttackResult = specialAttackResult;
             FightTime = fightTime;
@@ -22,27 +23,36 @@ namespace AODamageCalculator.Data
 
         public int TotalDamage { get; set; }
 
+        public PlayerInfo PlayerInfo { get; set; }
+
         public List<WeaponResult> WeaponResults { get; set; }
 
         public SpecialAttackResult SpecialAttackResult { get; set; }
 
-        public DamagePieChartItem[] DamagePieChart { get; set; }
+        public MudChartData DamagePieChart { get; set; }
 
         public int Iterations { get; set; }
 
         public int FightTime { get; set; }
 
-        private DamagePieChartItem[] BuildDamagePieChartItems(List<WeaponResult> weaponResults, SpecialAttackResult specialAttackResult)
+        private MudChartData BuildDamagePieChartItems(List<WeaponResult> weaponResults, SpecialAttackResult specialAttackResult)
         {
-            var items = new List<DamagePieChartItem>();
+            var dataList = new List<double>();
+            var labelList = new List<string>();
 
-            weaponResults.ForEach(wr => items.Add(new DamagePieChartItem { Source = wr.WeaponInfo.Name, Damage = wr.TotalDamage }));
+            weaponResults.ForEach(wr =>
+            {
+                dataList.Add(wr.TotalDamage);
+                labelList.Add(wr.Weapon.Name);
+            });
+
             foreach (var (name, damage) in specialAttackResult.TotalDamage())
             {
-                items.Add(new DamagePieChartItem { Source = name, Damage = damage });
+                dataList.Add(damage);
+                labelList.Add(name);
             }
 
-            return items.ToArray();
+            return new MudChartData { Data = dataList.ToArray(), Labels = labelList.ToArray() };
         }
     }
 }

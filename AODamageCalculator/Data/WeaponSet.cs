@@ -2,10 +2,10 @@
 {
     public class WeaponSet
     {
-        public WeaponInfo MainHand { get; set; } = new WeaponInfo("Main hand") { MinDamage = 125, MaxDamage = 320, CritModifier = 350, AttackTime = 1.3, RechargeTime = 1.3 };
+        public Weapon MainHand { get; set; } = new Weapon();
 
-        public WeaponInfo OffHand { get; set; } = new WeaponInfo("Off hand");
+        public Weapon OffHand { get; set; } = new Weapon();
 
-        public bool OffHandInUse { get; set; }
+        public bool OffHandInUse => OffHand.Name != null;
     }
 }

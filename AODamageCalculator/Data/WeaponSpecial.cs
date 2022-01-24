@@ -6,7 +6,7 @@
 
         public int SkillValue { get; set; }
 
-        public bool HasModifier { get; set; }
+        public bool HasModifier => Modifier > 0;
 
         public int Modifier { get; set; }
 
