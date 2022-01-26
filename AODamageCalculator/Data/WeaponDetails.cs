@@ -22,6 +22,8 @@ namespace AODamageCalculator.Data
 
         public WeaponSpecial GetSpecial(string name) => WeaponSpecials.FirstOrDefault(ws => ws.Name.Equals(name));
 
+        public bool SpecialSupported(string name) => WeaponSpecials.Any(ws => ws.Name.Equals(name));
+
         public void AddWeaponSpecials(List<WeaponSpecial> weaponSpecials)
         {
             WeaponSpecials.AddRange(weaponSpecials);

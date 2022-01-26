@@ -1,6 +1,6 @@
 ﻿namespace AODamageCalculator.Data
 {
-    public static class SupportedWeaponSpecials
+    public static class ImplementedWeaponSpecials
     {
         public static string FlingShot = "Fling shot";
 
