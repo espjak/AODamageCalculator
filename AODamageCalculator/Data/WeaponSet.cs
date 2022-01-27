@@ -10,9 +10,9 @@
 
         public bool IsWeaponSpecialEnabled(string special)
         {
-            if (MainHand.WeaponDetails.SpecialSupported(ImplementedWeaponSpecials.Burst) && MainHand.WeaponDetails.GetSpecial(ImplementedWeaponSpecials.Burst).IsEnabled)
+            if (MainHand.WeaponDetails.SpecialSupported(special) && MainHand.WeaponDetails.GetSpecial(special).IsEnabled)
                 return true;
-            if (OffHand.WeaponDetails.SpecialSupported(ImplementedWeaponSpecials.Burst) && OffHand.WeaponDetails.GetSpecial(ImplementedWeaponSpecials.Burst).IsEnabled)
+            if (OffHand.WeaponDetails.SpecialSupported(special) && OffHand.WeaponDetails.GetSpecial(special).IsEnabled)
                 return true;
 
             return false;

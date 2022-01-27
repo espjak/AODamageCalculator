@@ -13,9 +13,9 @@ namespace AODamageCalculator.Data
         public IEnumerable<WeaponSpecial> ToWeaponSpecials()
         {
             if (BurstSkill > 0)
-                yield return new WeaponSpecial { Name = "Burst", Modifier = BurstRecharge };
+                yield return new WeaponSpecial { Name = ImplementedWeaponSpecials.Burst, Modifier = BurstRecharge };
             if (FlingShotSkill > 0)
-                yield return new WeaponSpecial { Name = "Fling shot" };
+                yield return new WeaponSpecial { Name = ImplementedWeaponSpecials.FlingShot };
         }
     }
 }
