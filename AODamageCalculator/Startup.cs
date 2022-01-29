@@ -26,6 +26,8 @@ namespace AODamageCalculator
             services.AddServerSideBlazor();
             services.AddSingleton<ISpecialAttack, FlingShotAttack>();
             services.AddSingleton<ISpecialAttack, BurstAttack>();
+            services.AddSingleton<ISpecialAttack, FastAttack>();
+            services.AddSingleton<ISpecialAttack, BrawlAttack>();
             services.AddSingleton<IDamageCalculatorService, DamageCalculatorService>();
             services.AddMudServices();
         }

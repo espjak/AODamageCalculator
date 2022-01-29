@@ -17,6 +17,9 @@ namespace AODamageCalculator.Data
 
         public CalculationResult Calculate(WeaponSet weaponSet, PlayerInfo playerInfo)
         {
+            if (!CanCalculate(weaponSet, playerInfo))
+                return new CalculationResult();
+
             PrepareData(weaponSet, playerInfo);
             var fightTime = 60;
             var iterations = 500;
@@ -47,6 +50,14 @@ namespace AODamageCalculator.Data
             }
 
             return new CalculationResult(playerInfo, weaponResults.Values.ToList(), specialAttackResult, fightTime, iterations);
+        }
+
+        private bool CanCalculate(WeaponSet weaponSet, PlayerInfo playerInfo)
+        {
+            if (weaponSet.MainHand.Name == null)
+                return false;
+
+            return true;
         }
 
         private void PrepareData(WeaponSet weaponSet, PlayerInfo playerInfo)

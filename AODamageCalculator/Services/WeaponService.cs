@@ -63,6 +63,10 @@ namespace AODamageCalculator.Services
                         weaponSpecialsDef.BurstRecharge = reader.GetInt32(i);
                     else if (name == "tflingshot")
                         weaponSpecialsDef.FlingShotSkill = reader.GetInt32(i);
+                    else if (name == "tfastattack")
+                        weaponSpecialsDef.FastAttackSkill = reader.GetInt32(i);
+                    else if (name == "tbrawl")
+                        weaponSpecialsDef.BrawlSkill = reader.GetInt32(i);
                 }
                 weaponDetails.AddWeaponSpecials(weaponSpecialsDef.ToWeaponSpecials().ToList());
                 weapon.WeaponInfo = weaponInfo;
@@ -102,32 +106,21 @@ namespace AODamageCalculator.Services
                 if (ql == highestQlWeapon.Ql)
                     return highestQlWeapon.WeaponDetails;
 
-                var interpolatedMinDamage = LinearInterpolation(ql, (lowestQlWeapon.Ql, lowestQlWeapon.WeaponDetails.Damage.Min), (highestQlWeapon.Ql, highestQlWeapon.WeaponDetails.Damage.Min));
-                var interpolatedMaxDamage = LinearInterpolation(ql, (lowestQlWeapon.Ql, lowestQlWeapon.WeaponDetails.Damage.Max), (highestQlWeapon.Ql, highestQlWeapon.WeaponDetails.Damage.Max));
-                var interpolatedDamage = new IntRange(interpolatedMinDamage, interpolatedMaxDamage);
-                var interpolatedCritModifier = LinearInterpolation(ql, (lowestQlWeapon.Ql, lowestQlWeapon.WeaponDetails.CritModifier), (highestQlWeapon.Ql, highestQlWeapon.WeaponDetails.CritModifier));
+                var interpolatedMinDamage = InterpolationHelper.LinearInterpolation(ql, (lowestQlWeapon.Ql, lowestQlWeapon.WeaponDetails.Damage.Min), (highestQlWeapon.Ql, highestQlWeapon.WeaponDetails.Damage.Min));
+                var interpolatedMaxDamage = InterpolationHelper.LinearInterpolation(ql, (lowestQlWeapon.Ql, lowestQlWeapon.WeaponDetails.Damage.Max), (highestQlWeapon.Ql, highestQlWeapon.WeaponDetails.Damage.Max));
+                var interpolatedCritModifier = InterpolationHelper.LinearInterpolation(ql, (lowestQlWeapon.Ql, lowestQlWeapon.WeaponDetails.CritModifier), (highestQlWeapon.Ql, highestQlWeapon.WeaponDetails.CritModifier));
 
                 return new WeaponDetails
                 {
                     AttackTime = lowestQlWeapon.WeaponDetails.AttackTime,
                     RechargeTime = lowestQlWeapon.WeaponDetails.RechargeTime,
                     CritModifier = interpolatedCritModifier,
-                    Damage = new IntRange(interpolatedMinDamage, interpolatedMaxDamage)
+                    Damage = new IntRange(interpolatedMinDamage, interpolatedMaxDamage),
+                    WeaponSpecials = lowestQlWeapon.WeaponDetails.WeaponSpecials
                 };
             }
 
             return new WeaponDetails();
-        }
-
-        //  y = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
-        private int LinearInterpolation(float ql, (float ql, float damage) lowerQlDamage, (float ql, float damage) higherQlDamage)
-        {
-            if (ql.Equals(lowerQlDamage.ql))
-                return (int)lowerQlDamage.damage;
-            if (ql.Equals(higherQlDamage.ql))
-                return (int) higherQlDamage.damage;
-
-            return (int)(lowerQlDamage.damage + (ql - lowerQlDamage.ql)/(higherQlDamage.ql-lowerQlDamage.ql) * (higherQlDamage.damage - lowerQlDamage.damage));
         }
     }
 }

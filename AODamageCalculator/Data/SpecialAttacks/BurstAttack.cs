@@ -17,7 +17,7 @@ namespace AODamageCalculator.Data.SpecialAttacks
             var rechargeTime = Math.Max(8.0 + weaponDetails.AttackTime, (weaponDetails.RechargeTime * 20.0 + (specialAttack.Modifier / 100.0)) - (specialAttack.SkillValue / 25.0));
             var wholeNumberOfBursts = (int)(fightTime / rechargeTime);
 
-            var result = Enumerable.Range(0, wholeNumberOfBursts * 3).Select(a => AttackHelper.RegularAttack(weaponDetails, playerInfo, false)).ToList();
+            var result = Enumerable.Range(0, wholeNumberOfBursts * 3).Select(a => AttackHelper.RegularAttack(weaponDetails, playerInfo, supportsCriticalHit: false)).ToList();
             return (ImplementedWeaponSpecials.Burst, result);
         }
 

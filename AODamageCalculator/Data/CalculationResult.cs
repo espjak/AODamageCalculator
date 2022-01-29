@@ -8,6 +8,8 @@ namespace AODamageCalculator.Data
         public CalculationResult()
         {
             WeaponResults = new List<WeaponResult>();
+            SpecialAttackResult = new SpecialAttackResult();
+            DamagePieChart = new MudChartData();
         }
 
         public CalculationResult(PlayerInfo playerInfo, List<WeaponResult> weaponResults, SpecialAttackResult specialAttackResult, int fightTime, int iterations)

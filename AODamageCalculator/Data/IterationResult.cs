@@ -15,9 +15,9 @@ namespace AODamageCalculator.Data
 
         public List<DamageResult> Results { get; set; }
 
-        public int MinimumDamage => RegularHits.Min(dr => dr.Damage);
+        public int MinimumDamage => RegularHits.Any() ? RegularHits.Min(dr => dr.Damage) : 0;
 
-        public int HighestDamage => RegularHits.Max(dr => dr.Damage);
+        public int HighestDamage => RegularHits.Any() ? RegularHits.Max(dr => dr.Damage) : 0;
 
         public int CriticalDamage => CriticalHits.Any() ? CriticalHits.Max(dr => dr.Damage) : 0;
 
