@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using AODamageCalculator.Data;
+using AODamageCalculator.Data.Weapon;
 
 namespace AODamageCalculator.Services
 {
     public class WeaponService
     {
-        private readonly Lazy<Dictionary<string, List<Weapon>>> _weapons;
+        private readonly Lazy<Dictionary<string, List<WeaponEntity>>> _weapons;
         private readonly Lazy<List<WeaponInfo>> _weaponInfos;
 
         public WeaponService()
         {
-            _weapons = new Lazy<Dictionary<string, List<Weapon>>>(GetWeaponsFromDb);
+            _weapons = new Lazy<Dictionary<string, List<WeaponEntity>>>(GetWeaponsFromDb);
             _weaponInfos = new Lazy<List<WeaponInfo>>(() => BuildWeaponInfos(_weapons.Value));
         }
 
@@ -25,17 +26,17 @@ namespace AODamageCalculator.Services
             return _weaponInfos.Value.Where(w => w.Name.Contains(search, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        private Dictionary<string, List<Weapon>> GetWeaponsFromDb()
+        private Dictionary<string, List<WeaponEntity>> GetWeaponsFromDb()
         {
-            var allWeapons = new List<Weapon>();
-            using var connection = new SQLiteConnection("Data Source=aoitems.db;");
+            var allWeapons = new List<WeaponEntity>();
+            using var connection = new SQLiteConnection("Data Source=Resources/aoitems.db;");
             connection.Open();
             var command = connection.CreateCommand();
             command.CommandText = "SELECT * FROM tblAOWeapons JOIN tblAODamage ON tblAOWeapons.aoid = tblAODamage.aoid";
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                var weapon = new Weapon();
+                var weapon = new WeaponEntity();
                 var weaponInfo = new WeaponInfo();
                 var weaponDetails = new WeaponDetails();
                 var weaponSpecialsDef = new WeaponSpecialsDef();
@@ -67,6 +68,10 @@ namespace AODamageCalculator.Services
                         weaponSpecialsDef.FastAttackSkill = reader.GetInt32(i);
                     else if (name == "tbrawl")
                         weaponSpecialsDef.BrawlSkill = reader.GetInt32(i);
+                    else if (name == "tfullautoskill")
+                        weaponSpecialsDef.FullAutoSkill = reader.GetInt32(i);
+                    else if (name == "tfullautorecharge")
+                        weaponSpecialsDef.FullAutoRecharge = reader.GetInt32(i);
                 }
                 weaponDetails.AddWeaponSpecials(weaponSpecialsDef.ToWeaponSpecials().ToList());
                 weapon.WeaponInfo = weaponInfo;
@@ -78,7 +83,7 @@ namespace AODamageCalculator.Services
             return allWeapons.GroupBy(w => w.Name).ToDictionary(g => g.Key, g => g.ToList());
         }
 
-        private List<WeaponInfo> BuildWeaponInfos(Dictionary<string, List<Weapon>> weapons)
+        private List<WeaponInfo> BuildWeaponInfos(Dictionary<string, List<WeaponEntity>> weapons)
         {
             var weaponInfos = new List<WeaponInfo>();
             foreach (var weapon in weapons)

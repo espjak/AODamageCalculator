@@ -1,4 +1,6 @@
 ﻿@using AODamageCalculator.Data
+@using AODamageCalculator.Data.Weapon
+@using Microsoft.AspNetCore.Components
 
 <MudItem xs="3">
     <MudText Typo="Typo.h5">@Title</MudText>
@@ -37,7 +39,7 @@
         }
 </MudItem>
 @code {
-    private WeaponInfo _weaponInfo = new WeaponInfo();
+    private WeaponInfo _weaponInfo = new();
     private int _weaponQl = 1;
 
     [Parameter]
@@ -56,7 +58,7 @@
     public Func<string, IEnumerable<WeaponInfo>> SearchFunc { get; set; }
 
     [Parameter]
-    public Weapon Weapon { get; set; } = new Weapon();
+    public WeaponEntity Weapon { get; set; } = new();
 
     public WeaponInfo WeaponInfo
     {

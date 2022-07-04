@@ -1,4 +1,6 @@
 ﻿@using AODamageCalculator.Data
+@using AODamageCalculator.Data.Result
+@using AODamageCalculator.Data.Weapon
 @using AODamageCalculator.Services
 @inject IDamageCalculatorService _calcService
 @inject IDialogService DialogService
@@ -20,10 +22,10 @@
 <MudButton Variant="Variant.Filled" OnClick="CalculateAndDisplayResult">Calculate</MudButton>
 
 @code {
-    private PlayerInfo _playerInfo = new PlayerInfo();
-    private WeaponSet _weaponSet = new WeaponSet();
+    private PlayerInfo _playerInfo = new();
+    private WeaponSet _weaponSet = new();
     private CalculationResult _result;
-    private WeaponService _weaponService = new WeaponService();
+    private WeaponService _weaponService = new();
 
     public void MainHandWeaponChanged(WeaponInfo weaponInfo)
     {
@@ -45,14 +47,14 @@
         WeaponQlChanged(ql, _weaponSet.OffHand);
     }
 
-    private void WeaponChanged(WeaponInfo weaponInfo, Weapon weapon)
+    private void WeaponChanged(WeaponInfo weaponInfo, WeaponEntity weapon)
     {
         var ql = weaponInfo.QlRange.Min;
         var weaponDetails = _weaponService.GetWeaponDetails(weaponInfo.Name, ql);
         weapon.UpdateWeapon(weaponInfo, weaponDetails, ql);
     }
 
-    private void WeaponQlChanged(int ql, Weapon weapon)
+    private void WeaponQlChanged(int ql, WeaponEntity weapon)
     {
         var weaponDetails = _weaponService.GetWeaponDetails(weapon.Name, ql);
         weapon.UpdateWeapon(weapon.WeaponInfo, weaponDetails, ql);
@@ -61,8 +63,7 @@
     private void CalculateAndDisplayResult()
     {
         _result = _calcService.Calculate(_weaponSet, _playerInfo);
-        var parameters = new DialogParameters();
-        parameters.Add("Result", _result);
+        var parameters = new DialogParameters { { "Result", _result } };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
         DialogService.Show<ResultDialog>("Result", parameters, options);
     }

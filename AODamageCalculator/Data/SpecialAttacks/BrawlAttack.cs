@@ -1,24 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using AODamageCalculator.Data.Result;
+using AODamageCalculator.Data.Weapon;
 
 namespace AODamageCalculator.Data.SpecialAttacks
 {
     public class BrawlAttack : ISpecialAttack
     {
-        public (string, List<DamageResult>) GetAttackResult(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
+        public SpecialAttackResult GetAttackResult(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
         {
-            var weaponDetails = weaponSet.MainHand.WeaponDetails.GetSpecial(ImplementedWeaponSpecials.Brawl).IsEnabled
+            var weaponDetails = weaponSet.MainHand.WeaponDetails.SpecialSupported(ImplementedWeaponSpecials.Brawl)
                 ? weaponSet.MainHand.WeaponDetails
                 : weaponSet.OffHand.WeaponDetails;
 
-            var specialAttack = weaponDetails.GetSpecial(ImplementedWeaponSpecials.Brawl);
+            var weaponSpecial = weaponDetails.GetSpecial(ImplementedWeaponSpecials.Brawl);
 
             var rechargeTime = 15;
-            var wholeNumberOfAttacks = (int)(fightTime / rechargeTime);
-            var brawlWeaponDetails = CreateBrawlWeaponDetails(specialAttack.SkillValue);
+            var wholeNumberOfAttacks = Math.Max(1, fightTime / rechargeTime);
+            var brawlWeaponDetails = CreateBrawlWeaponDetails(weaponSpecial.SkillValue);
+            var result = new SpecialAttackResult { Name = ImplementedWeaponSpecials.Brawl };
+            foreach (var attack in Enumerable.Range(0, wholeNumberOfAttacks))
+            {
+                result.DamageResults.Add(attack, new List<DamageResult> { AttackHelper.WeaponSpecialAttack(brawlWeaponDetails, playerInfo, weaponSpecial) });
+            }
 
-            var result = Enumerable.Range(0, wholeNumberOfAttacks).Select(a => AttackHelper.RegularAttack(brawlWeaponDetails, playerInfo, (playerInfo.AttackRating + specialAttack.SkillValue) / 2)).ToList();
-            return (ImplementedWeaponSpecials.Brawl, result);
+            result.Details.Add($"Number of attacks: {wholeNumberOfAttacks}");
+
+            return result;
         }
 
         public bool IsEnabled(WeaponSet weaponSet) => weaponSet.IsWeaponSpecialEnabled(ImplementedWeaponSpecials.Brawl);

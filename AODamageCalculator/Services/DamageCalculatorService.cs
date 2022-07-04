@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.Linq;
+using AODamageCalculator.Data.Nukes;
+using AODamageCalculator.Data.Result;
 using AODamageCalculator.Data.SpecialAttacks;
+using AODamageCalculator.Data.Weapon;
 
 namespace AODamageCalculator.Data
 {
@@ -25,7 +27,7 @@ namespace AODamageCalculator.Data
             var iterations = 500;
             var numberOfAttacksByWeapon = GetNumberOfAttacks(weaponSet, playerInfo, fightTime);
             var weaponResults = new Dictionary<string, WeaponResult>();
-            var specialAttackResult = new SpecialAttackResult();
+            var specialAttackResult = new SpecialAttackResults();
             foreach (var (weapon, attacks) in numberOfAttacksByWeapon)
             {
                 weaponResults.Add(weapon.Name, new WeaponResult(weapon));
@@ -52,6 +54,35 @@ namespace AODamageCalculator.Data
             return new CalculationResult(playerInfo, weaponResults.Values.ToList(), specialAttackResult, fightTime, iterations);
         }
 
+        public NukeCalculationResult Calculate(NukeDetails nukeDetails, PlayerInfo playerInfo)
+        {
+            var adjustedAttackTime = nukeDetails.AttackTime - playerInfo.Initiatives / 200.0;
+            var fightTime = 60;
+            var iterations = 500;
+
+            var numberOfAttacks = (int)(fightTime / (adjustedAttackTime + nukeDetails.RechargeTime));
+            var iterationResult = new Dictionary<int, List<DamageResult>>();
+            foreach (var iteration in Enumerable.Range(0, iterations))
+            {
+                var damageResults = new List<DamageResult>();
+                foreach (var attack in Enumerable.Range(0, numberOfAttacks))
+                {
+                    damageResults.Add(AttackHelper.RegularAttack(nukeDetails, playerInfo, false, false));
+                }
+                iterationResult.Add(iteration, damageResults);
+            }
+
+            var averageDamage = (int)iterationResult.Average(kvp => kvp.Value.Sum(r => r.Damage));
+            return new NukeCalculationResult
+            {
+                FightTime = fightTime,
+                Iterations = iterations,
+                PlayerInfo = playerInfo,
+                TotalDamage = averageDamage,
+                DamagePerSecond = averageDamage / fightTime
+            };
+        }
+
         private bool CanCalculate(WeaponSet weaponSet, PlayerInfo playerInfo)
         {
             if (weaponSet.MainHand.Name == null)
@@ -66,18 +97,18 @@ namespace AODamageCalculator.Data
                 weaponSet.OffHand.Name = $"{weaponSet.OffHand.Name} off hand";
         }
 
-        private Dictionary<string, List<DamageResult>> CalculateSpecialAttacks(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
+        private Dictionary<string, SpecialAttackResult> CalculateSpecialAttacks(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
         {
             var result = _specialAttacks
                 .Where(sa => sa.IsEnabled(weaponSet))
                 .Select(sa => sa.GetAttackResult(fightTime, weaponSet, playerInfo));
 
-            return result.ToDictionary(r => r.Item1, r => r.Item2);
+            return result.ToDictionary(r => r.Name, r => r);
         }
 
-        private Dictionary<Weapon, int> GetNumberOfAttacks(WeaponSet weaponSet, PlayerInfo playerInfo, int fightTime)
+        private Dictionary<WeaponEntity, int> GetNumberOfAttacks(WeaponSet weaponSet, PlayerInfo playerInfo, int fightTime)
         {
-            var attacks = new Dictionary<Weapon, int>();
+            var attacks = new Dictionary<WeaponEntity, int>();
             if (weaponSet.OffHandInUse)
             {
                 var granularityMultiplier = 1000;

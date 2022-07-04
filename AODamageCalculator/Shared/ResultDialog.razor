@@ -1,4 +1,4 @@
-﻿@using AODamageCalculator.Data
+﻿@using AODamageCalculator.Data.Result
 
 <MudDialog>
     <DialogContent>
@@ -19,13 +19,18 @@
                     <MudText>Highest attack damage: @weaponResult.HighestDamage</MudText>
                 </MudItem>
             }
-            @if (Result.SpecialAttackResult != null)
+            @if (Result.SpecialAttackResults != null)
             {
                 <MudItem xs="4">
                     <MudText><strong>Specials</strong></MudText>
-                    @foreach (var (name, damage) in Result.SpecialAttackResult.TotalDamage())
+                    @foreach (var (name, avgResult) in Result.SpecialAttackResults.GetAveragedResults())
                     {
-                        <MudText>@name damage: @damage</MudText>
+                        <MudText>@name</MudText>
+                        <MudText Class="ml-4">Damage: @avgResult.Damage</MudText>
+                        @foreach (var detail in avgResult.Details)
+                        {
+                            <MudText Class="ml-4">@detail</MudText>
+                        }
                     }
                 </MudItem>
             }

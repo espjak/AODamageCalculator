@@ -1,0 +1,40 @@
+﻿@page "/nukes"
+@using Microsoft.AspNetCore.Components
+@using AODamageCalculator.Data
+@using AODamageCalculator.Data.Nukes
+@inject IDamageCalculatorService _calcService
+
+<MudGrid Spacing="2" Class="pa-4">
+    <MudItem xs="3">
+        <MudText Typo="Typo.h5">Nuke info</MudText>
+        <MudNumericField HideSpinButtons="true" @bind-Value="_nukeDetails.Damage.Min" Label="Min damage" Variant="Variant.Text" />
+        <MudNumericField HideSpinButtons="true" @bind-Value="_nukeDetails.Damage.Max" Label="Max damage" Variant="Variant.Text" />
+        <MudNumericField HideSpinButtons="true" @bind-Value="_nukeDetails.AttackTime" Label="Attack time" Variant="Variant.Text" />
+        <MudNumericField HideSpinButtons="true" @bind-Value="_nukeDetails.MinimumAttackTime" Label="Minimum attack time" Variant="Variant.Text" />
+        <MudNumericField HideSpinButtons="true" @bind-Value="_nukeDetails.RechargeTime" Label="Recharge time" Variant="Variant.Text" />
+    </MudItem>
+    <MudItem xs="3">
+        <MudText Typo="Typo.h5">Player info</MudText>
+        <MudNumericField HideSpinButtons="true" @bind-Value="_playerInfo.AddDamage" Label="Add damage" Variant="Variant.Text"/>
+        <MudNumericField HideSpinButtons="true" @bind-Value="_playerInfo.Initiatives" Label="Initiatives" Variant="Variant.Text"/>
+        <MudNumericField HideSpinButtons="true" @bind-Value="_playerInfo.TargetAC" Label="Targets AC" Variant="Variant.Text"/>
+    </MudItem>
+</MudGrid>
+<MudButton Variant="Variant.Filled" OnClick="CalculateAndDisplayResult">Calculate</MudButton>
+@if (_result != null)
+{
+    <MudText>Average from @_result.Iterations iterations</MudText>
+    <MudText>Damage done over @_result.FightTime seconds: @_result.TotalDamage</MudText>
+    <MudText>Damage per second: @_result.DamagePerSecond</MudText>
+}
+
+@code {
+    private readonly PlayerInfo _playerInfo = new();
+    private readonly NukeDetails _nukeDetails = new();
+    private NukeCalculationResult _result;
+
+    private void CalculateAndDisplayResult()
+    {
+        _result = _calcService.Calculate(_nukeDetails, _playerInfo);
+    }
+}

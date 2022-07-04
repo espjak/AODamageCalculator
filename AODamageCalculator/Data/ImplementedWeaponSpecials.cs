@@ -9,5 +9,7 @@
         public static string FastAttack = "Fast attack";
 
         public static string Brawl = "Brawl";
+
+        public static string FullAuto = "Full auto";
     }
 }

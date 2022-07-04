@@ -1,24 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AODamageCalculator.Data.Result;
+using AODamageCalculator.Data.Weapon;
 
 namespace AODamageCalculator.Data.SpecialAttacks
 {
     public class FastAttack : ISpecialAttack
     {
-        public (string, List<DamageResult>) GetAttackResult(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
+        public SpecialAttackResult GetAttackResult(int fightTime, WeaponSet weaponSet, PlayerInfo playerInfo)
         {
-            var weaponDetails = weaponSet.MainHand.WeaponDetails.GetSpecial(ImplementedWeaponSpecials.FastAttack).IsEnabled
+            var weaponDetails = weaponSet.MainHand.WeaponDetails.SpecialSupported(ImplementedWeaponSpecials.FastAttack)
                 ? weaponSet.MainHand.WeaponDetails
                 : weaponSet.OffHand.WeaponDetails;
 
-            var specialAttack = weaponDetails.GetSpecial(ImplementedWeaponSpecials.FastAttack);
+            var weaponSpecial = weaponDetails.GetSpecial(ImplementedWeaponSpecials.FastAttack);
 
-            var rechargeTime = Math.Max(6.0 + weaponDetails.AttackTime, (weaponDetails.AttackTime * 15.0) - (specialAttack.SkillValue / 100.0));
-            var wholeNumberOfAttacks = (int)(fightTime / rechargeTime);
+            var rechargeTime = Math.Max(6.0 + weaponDetails.AttackTime, (weaponDetails.AttackTime * 15.0) - (weaponSpecial.SkillValue / 100.0));
+            var wholeNumberOfAttacks = Math.Max(1, (int)(fightTime / rechargeTime));
 
-            var result = Enumerable.Range(0, wholeNumberOfAttacks).Select(a => AttackHelper.RegularAttack(weaponDetails, playerInfo)).ToList();
-            return (ImplementedWeaponSpecials.FastAttack, result);
+            var result = new SpecialAttackResult { Name = ImplementedWeaponSpecials.FastAttack };
+            foreach (var attack in Enumerable.Range(0, wholeNumberOfAttacks))
+            {
+                result.DamageResults.Add(attack, new List<DamageResult> { AttackHelper.WeaponSpecialAttack(weaponDetails, playerInfo, weaponSpecial) });
+            }
+
+            result.Details.Add($"Number of attacks: {wholeNumberOfAttacks}");
+
+            return result;
         }
 
         public bool IsEnabled(WeaponSet weaponSet) => weaponSet.IsWeaponSpecialEnabled(ImplementedWeaponSpecials.FastAttack);

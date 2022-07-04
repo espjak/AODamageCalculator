@@ -6,26 +6,18 @@
 
 <MudLayout>
     <MudAppBar>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <img src="https://aws1.discourse-cdn.com/funcom/original/2X/f/f6e4f7c3b1606f537a60aec2241f8676f01470ea.png" width="200" height="63" alt="">
-    </MudAppBar>
-    <MudDrawer @bind-Open="@_drawerOpen">
+        <img src="anarchy-red-free-hd-image.png" alt="" height="40" width="40" />
+        <MudText class="ml-2 mr-2">A damage calculator for Anarchy Online</MudText>
         <MudNavMenu>
-            <MudNavLink Href="/" Match="NavLinkMatch.All">Calculator</MudNavLink>
+            <MudNavLink Href="/" Match="NavLinkMatch.All">Weapon calculator</MudNavLink>
         </MudNavMenu>
-    </MudDrawer>
+        <MudNavMenu>
+            <MudNavLink Href="/nukes" Match="NavLinkMatch.All">Nukes</MudNavLink>
+        </MudNavMenu>
+    </MudAppBar>
     <MudMainContent>
         <MudContainer Fixed="true">
             @Body
         </MudContainer>
     </MudMainContent>
 </MudLayout>
-
-@code {
-    bool _drawerOpen = false;
-
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-}
